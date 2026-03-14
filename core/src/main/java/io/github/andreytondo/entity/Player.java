@@ -14,7 +14,7 @@ public class Player extends BaseActor implements Renderable {
     private final Dash dash;
 
     public Player(float x, float y) {
-        super(x, y, Constants.PLAYER_SIZE, Constants.PLAYER_SIZE, Constants.PLAYER_SPEED);
+        super(x, y, Constants.PLAYER_SIZE, Constants.PLAYER_SIZE, Constants.PLAYER_SPEED, Constants.PLAYER_HEALTH);
         this.input = new PlayerInput();
         this.dash = new Dash(Constants.PLAYER_DASH_DURATION, Constants.PLAYER_DASH_COOLDOWN, Constants.PLAYER_DASH_MULTIPLIER);
     }

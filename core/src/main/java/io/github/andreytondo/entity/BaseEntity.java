@@ -5,7 +5,8 @@ import io.github.andreytondo.contract.HasPosition;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter @Setter
+@Getter
+@Setter
 public abstract class BaseEntity implements HasPosition {
     protected final Vector2 position;
     protected float width;

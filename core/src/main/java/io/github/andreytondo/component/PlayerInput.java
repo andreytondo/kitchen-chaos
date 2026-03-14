@@ -24,4 +24,9 @@ public class PlayerInput {
 
         return direction;
     }
+
+    public boolean isDashPressed() {
+        return Gdx.input.isKeyJustPressed(Input.Keys.SHIFT_LEFT)
+            || Gdx.input.isKeyJustPressed(Input.Keys.SHIFT_RIGHT);
+    }
 }

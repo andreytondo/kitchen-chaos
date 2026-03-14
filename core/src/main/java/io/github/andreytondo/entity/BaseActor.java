@@ -8,20 +8,26 @@ import lombok.Getter;
 
 @Getter
 public abstract class BaseActor extends BaseEntity implements Updatable {
+    protected final float speed;
     protected final Vector2 facingDirection;
     protected final Movement movementComponent;
 
     protected BaseActor(float x, float y, float width, float height, float speed) {
         super(x, y, width, height);
+        this.speed = speed;
         this.facingDirection = new Vector2(1f, 0f);
-        this.movementComponent = new BasicMovement(speed);
+        this.movementComponent = new BasicMovement();
     }
 
     protected void move(Vector2 direction, float delta) {
+        move(direction, speed, delta);
+    }
+
+    protected void move(Vector2 direction, float effectiveSpeed, float delta) {
         if (direction != null && !direction.isZero()) {
             facingDirection.set(direction).nor();
         }
 
-        movementComponent.move(position, direction, delta);
+        movementComponent.move(position, direction, effectiveSpeed, delta);
     }
 }

@@ -1,0 +1,35 @@
+package io.github.andreytondo.entity;
+
+import io.github.andreytondo.component.Attack;
+import io.github.andreytondo.component.MeleeChaseAI;
+import io.github.andreytondo.contract.EnemyBehavior;
+import io.github.andreytondo.contract.Renderable;
+import io.github.andreytondo.utils.Constants;
+import io.github.andreytondo.utils.GameRenderer;
+
+public class TomatoEnemy extends BaseActor implements Renderable {
+    private final EnemyBehavior behavior;
+    private final BaseActor target;
+
+    public TomatoEnemy(float x, float y, BaseActor target) {
+        super(x, y, Constants.TOMATO_SIZE, Constants.TOMATO_SIZE, Constants.TOMATO_SPEED, Constants.TOMATO_HEALTH);
+        Attack attack = new Attack(10f, Constants.TOMATO_SIZE, 2f);
+        this.behavior = new MeleeChaseAI(attack);
+        this.target = target;
+    }
+
+    @Override
+    public void update(float delta) {
+        if (isDead()) {
+            setActive(false);
+            return;
+        }
+
+        behavior.execute(target, this, delta);
+    }
+
+    @Override
+    public void render(GameRenderer renderer) {
+        renderer.getShapeRenderer().rect(getX(), getY(), getWidth(), getHeight());
+    }
+}

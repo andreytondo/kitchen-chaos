@@ -6,8 +6,15 @@ public class Constants {
 
     public static final float PLAYER_SIZE = WORLD_WIDTH * 0.025f;  // ~32px at 1280
     public static final float PLAYER_SPEED = WORLD_WIDTH * 0.172f;  // ~220px/s at 1280
-    public static final float PLAYER_HEALTH = 100F;
+    public static final float PLAYER_HEALTH = 1000F;
     public static final float PLAYER_DASH_MULTIPLIER = 3.5f;
     public static final float PLAYER_DASH_DURATION = 0.2f;   // segundos
     public static final float PLAYER_DASH_COOLDOWN = 1.0f;   // segundos
+    public static final float PLAYER_ATTACK_DAMAGE = 25f;
+    public static final float PLAYER_ATTACK_RANGE = PLAYER_SIZE * 2f;
+    public static final float PLAYER_ATTACK_COOLDOWN = 0.5f;
+
+    public static final float TOMATO_SIZE = WORLD_WIDTH * 0.025f;  // ~32px at 1280
+    public static final float TOMATO_SPEED = WORLD_WIDTH * 0.172f;  // ~220px/s at 1280
+    public static final float TOMATO_HEALTH = 100F;
 }

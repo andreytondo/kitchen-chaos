@@ -29,4 +29,8 @@ public class PlayerInput {
         return Gdx.input.isKeyJustPressed(Input.Keys.SHIFT_LEFT)
             || Gdx.input.isKeyJustPressed(Input.Keys.SHIFT_RIGHT);
     }
+
+    public boolean isAttackPressed() {
+        return Gdx.input.isKeyPressed(Input.Keys.SPACE);
+    }
 }

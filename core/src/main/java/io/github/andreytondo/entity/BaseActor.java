@@ -23,7 +23,7 @@ public abstract class BaseActor extends BaseEntity implements Updatable, HasHeal
         this.health = new Health(maxHealth);
     }
 
-    protected void move(Vector2 direction, float delta) {
+    public void move(Vector2 direction, float delta) {
         move(direction, speed, delta);
     }
 

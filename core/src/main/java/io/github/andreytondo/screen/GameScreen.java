@@ -6,21 +6,36 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import io.github.andreytondo.entity.Player;
+import io.github.andreytondo.entity.TomatoEnemy;
 import io.github.andreytondo.utils.Constants;
 import io.github.andreytondo.utils.GameRenderer;
+
+import java.util.List;
 
 public class GameScreen implements Screen {
 
     private final OrthographicCamera camera;
     private final GameRenderer gameRenderer;
     private final Player player;
+    private final List<TomatoEnemy> enemies;
 
     public GameScreen() {
         this.camera = new OrthographicCamera();
         this.camera.setToOrtho(false, Constants.WORLD_WIDTH, Constants.WORLD_HEIGHT);
 
         this.gameRenderer = new GameRenderer();
-        this.player = new Player(200f, 200f);
+
+        float cx = Constants.WORLD_WIDTH / 2f;
+        float cy = Constants.WORLD_HEIGHT / 2f;
+        this.player = new Player(cx, cy);
+
+        float offset = 300f;
+        this.enemies = List.of(
+            new TomatoEnemy(cx - offset, cy - offset, player),
+            new TomatoEnemy(cx + offset, cy - offset, player),
+            new TomatoEnemy(cx - offset, cy + offset, player),
+            new TomatoEnemy(cx + offset, cy + offset, player)
+        );
     }
 
     @Override
@@ -34,12 +49,22 @@ public class GameScreen implements Screen {
         gameRenderer.getShapeRenderer().setProjectionMatrix(camera.combined);
 
         gameRenderer.getShapeRenderer().begin(ShapeRenderer.ShapeType.Filled);
-        player.render(gameRenderer);
+        if (player.isActive()) player.render(gameRenderer);
+        for (TomatoEnemy enemy : enemies) {
+            if (enemy.isActive()) enemy.render(gameRenderer);
+        }
         gameRenderer.getShapeRenderer().end();
     }
 
     private void update(float delta) {
         player.update(delta);
+        if (!player.isActive()) return;
+        for (TomatoEnemy enemy : enemies) {
+            if (enemy.isActive()) {
+                enemy.update(delta);
+                player.tryAttack(enemy);
+            }
+        }
     }
 
     @Override
@@ -48,6 +73,7 @@ public class GameScreen implements Screen {
 
     @Override
     public void resize(int width, int height) {
+        camera.setToOrtho(false, Constants.WORLD_WIDTH, Constants.WORLD_HEIGHT);
     }
 
     @Override

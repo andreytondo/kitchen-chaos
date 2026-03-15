@@ -46,10 +46,14 @@ public class GameScreen implements Screen {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         camera.update();
-        gameRenderer.getShapeRenderer().setProjectionMatrix(camera.combined);
 
-        gameRenderer.getShapeRenderer().begin(ShapeRenderer.ShapeType.Filled);
+        gameRenderer.getBatch().setProjectionMatrix(camera.combined);
+        gameRenderer.getBatch().begin();
         if (player.isActive()) player.render(gameRenderer);
+        gameRenderer.getBatch().end();
+
+        gameRenderer.getShapeRenderer().setProjectionMatrix(camera.combined);
+        gameRenderer.getShapeRenderer().begin(ShapeRenderer.ShapeType.Filled);
         for (TomatoEnemy enemy : enemies) {
             if (enemy.isActive()) enemy.render(gameRenderer);
         }
@@ -91,5 +95,6 @@ public class GameScreen implements Screen {
     @Override
     public void dispose() {
         gameRenderer.dispose();
+        player.dispose();
     }
 }

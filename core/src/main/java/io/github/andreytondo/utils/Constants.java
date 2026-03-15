@@ -4,7 +4,7 @@ public class Constants {
     public static final float WORLD_WIDTH = 1920f;
     public static final float WORLD_HEIGHT = 1080f;
 
-    public static final float PLAYER_SIZE = WORLD_WIDTH * 0.025f;  // ~32px at 1280
+    public static final float PLAYER_SIZE = WORLD_WIDTH * 0.083f;  // ~160px (2.5x sprite size)
     public static final float PLAYER_SPEED = WORLD_WIDTH * 0.172f;  // ~220px/s at 1280
     public static final float PLAYER_HEALTH = 1000F;
     public static final float PLAYER_DASH_MULTIPLIER = 3.5f;

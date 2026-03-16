@@ -1,5 +1,7 @@
 package io.github.andreytondo.entity;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Texture;
 import io.github.andreytondo.component.Attack;
 import io.github.andreytondo.component.MeleeChaseAI;
 import io.github.andreytondo.contract.EnemyBehavior;
@@ -10,12 +12,14 @@ import io.github.andreytondo.utils.GameRenderer;
 public class TomatoEnemy extends BaseActor implements Renderable {
     private final EnemyBehavior behavior;
     private final BaseActor target;
+    private final Texture texture;
 
     public TomatoEnemy(float x, float y, BaseActor target) {
         super(x, y, Constants.TOMATO_SIZE, Constants.TOMATO_SIZE, Constants.TOMATO_SPEED, Constants.TOMATO_HEALTH);
         Attack attack = new Attack(10f, Constants.TOMATO_SIZE, 2f);
         this.behavior = new MeleeChaseAI(attack);
         this.target = target;
+        this.texture = new Texture(Gdx.files.internal("tomato.png"));
     }
 
     @Override
@@ -30,6 +34,10 @@ public class TomatoEnemy extends BaseActor implements Renderable {
 
     @Override
     public void render(GameRenderer renderer) {
-        renderer.getShapeRenderer().rect(getX(), getY(), getWidth(), getHeight());
+        renderer.getBatch().draw(texture, getX(), getY(), getWidth(), getHeight());
+    }
+
+    public void dispose() {
+        texture.dispose();
     }
 }

@@ -4,7 +4,6 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import io.github.andreytondo.entity.Player;
 import io.github.andreytondo.entity.TomatoEnemy;
 import io.github.andreytondo.utils.Constants;
@@ -50,14 +49,10 @@ public class GameScreen implements Screen {
         gameRenderer.getBatch().setProjectionMatrix(camera.combined);
         gameRenderer.getBatch().begin();
         if (player.isActive()) player.render(gameRenderer);
-        gameRenderer.getBatch().end();
-
-        gameRenderer.getShapeRenderer().setProjectionMatrix(camera.combined);
-        gameRenderer.getShapeRenderer().begin(ShapeRenderer.ShapeType.Filled);
         for (TomatoEnemy enemy : enemies) {
             if (enemy.isActive()) enemy.render(gameRenderer);
         }
-        gameRenderer.getShapeRenderer().end();
+        gameRenderer.getBatch().end();
     }
 
     private void update(float delta) {
@@ -96,5 +91,6 @@ public class GameScreen implements Screen {
     public void dispose() {
         gameRenderer.dispose();
         player.dispose();
+        enemies.forEach(TomatoEnemy::dispose);
     }
 }

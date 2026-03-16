@@ -14,7 +14,7 @@ public class Constants {
     public static final float PLAYER_ATTACK_RANGE = PLAYER_SIZE * 2f;
     public static final float PLAYER_ATTACK_COOLDOWN = 0.5f;
 
-    public static final float TOMATO_SIZE = WORLD_WIDTH * 0.025f;  // ~32px at 1280
+    public static final float TOMATO_SIZE = WORLD_WIDTH * 0.075f;  // ~96px at 1920
     public static final float TOMATO_SPEED = WORLD_WIDTH * 0.172f;  // ~220px/s at 1280
     public static final float TOMATO_HEALTH = 100F;
 }

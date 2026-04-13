@@ -44,8 +44,8 @@
 ### Sprint 1 — Known Issues / Remaining Work
 - [ ] **Enemy world boundary clamping** — enemies can be pushed off-screen; mirror `clampToWorld()` from `Player`
 - [ ] **Mouse aiming** — `facingDirection` should point toward mouse cursor; required for directional melee and all future ranged weapons
-- [ ] **Game-over / restart screen** — death sets player inactive but nothing happens; needs a `GameOverScreen`
-- [ ] **Start / main menu screen** — no entry screen yet
+- [x] **Game-over / restart screen** — `GameOverScreen` shown on player death; Restart creates a new `GameScreen`, Main Menu returns to `MainMenuScreen`
+- [x] **Start / main menu screen** — `MainMenuScreen` with title label and Start button; transitions to `GameScreen`
 - [x] **Window title** — set to `"Kitchen Chaos"` in `Lwjgl3Launcher`
 - [x] **`AssetManager`** — textures loaded once in `KitchenChaos`, injected into entities via constructor; `Assets.java` holds all path constants
 

@@ -3,7 +3,7 @@ package io.github.andreytondo;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Texture;
-import io.github.andreytondo.screen.GameScreen;
+import io.github.andreytondo.screen.MainMenuScreen;
 import io.github.andreytondo.utils.Assets;
 
 public class KitchenChaos extends Game {
@@ -16,7 +16,7 @@ public class KitchenChaos extends Game {
         assets.load(Assets.PLAYER, Texture.class);
         assets.load(Assets.TOMATO, Texture.class);
         assets.finishLoading();
-        setScreen(new GameScreen(assets));
+        setScreen(new MainMenuScreen(this, assets));
     }
 
     @Override

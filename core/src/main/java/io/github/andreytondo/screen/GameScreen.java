@@ -1,5 +1,6 @@
 package io.github.andreytondo.screen;
 
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.assets.AssetManager;
@@ -19,12 +20,16 @@ import java.util.List;
 
 public class GameScreen implements Screen {
 
+    private final Game game;
+    private final AssetManager assets;
     private final OrthographicCamera camera;
     private final GameRenderer gameRenderer;
     private final Player player;
     private final List<TomatoEnemy> enemies;
 
-    public GameScreen(AssetManager assets) {
+    public GameScreen(Game game, AssetManager assets) {
+        this.game = game;
+        this.assets = assets;
         this.camera = new OrthographicCamera();
         this.camera.setToOrtho(false, Constants.WORLD_WIDTH, Constants.WORLD_HEIGHT);
 
@@ -92,7 +97,10 @@ public class GameScreen implements Screen {
 
     private void update(float delta) {
         player.update(delta);
-        if (!player.isActive()) return;
+        if (!player.isActive()) {
+            game.setScreen(new GameOverScreen(game, assets));
+            return;
+        }
         for (TomatoEnemy enemy : enemies) {
             if (enemy.isActive()) {
                 enemy.update(delta);

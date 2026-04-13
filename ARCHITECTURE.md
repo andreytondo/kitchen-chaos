@@ -11,7 +11,9 @@
 io.github.andreytondo/
 ├── KitchenChaos.java          # LibGDX Game entry point; owns the AssetManager
 ├── screen/                    # Game screens (one per game state)
-│   └── GameScreen.java        # Temporary test scaffold — will be replaced
+│   ├── MainMenuScreen.java    # Entry screen: title + Start button
+│   ├── GameScreen.java        # Temporary test scaffold — will be replaced
+│   └── GameOverScreen.java    # Shown on player death: Restart / Main Menu
 ├── entity/                    # Game objects (player, enemies, etc.)
 │   ├── BaseEntity.java
 │   ├── BaseActor.java

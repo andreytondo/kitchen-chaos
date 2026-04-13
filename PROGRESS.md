@@ -46,7 +46,7 @@
 - [ ] **Mouse aiming** — `facingDirection` should point toward mouse cursor; required for directional melee and all future ranged weapons
 - [ ] **Game-over / restart screen** — death sets player inactive but nothing happens; needs a `GameOverScreen`
 - [ ] **Start / main menu screen** — no entry screen yet
-- [ ] **Window title** — currently `"DJ46S"` in `Lwjgl3Launcher`; change to `"Kitchen Chaos"`
+- [x] **Window title** — set to `"Kitchen Chaos"` in `Lwjgl3Launcher`
 - [x] **`AssetManager`** — textures loaded once in `KitchenChaos`, injected into entities via constructor; `Assets.java` holds all path constants
 
 ---

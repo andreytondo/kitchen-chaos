@@ -1,7 +1,6 @@
 package io.github.andreytondo.entity;
 
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import io.github.andreytondo.component.Attack;
 import io.github.andreytondo.component.Dash;
@@ -47,11 +46,6 @@ public class Player extends BaseActor implements Renderable {
     public boolean tryAttack(BaseActor target) {
         if (!input.isAttackPressed()) return false;
         return attack.tryAttack(target, this);
-    }
-
-    private void clampToWorld() {
-        position.x = MathUtils.clamp(position.x, 0f, Constants.WORLD_WIDTH - width);
-        position.y = MathUtils.clamp(position.y, 0f, Constants.WORLD_HEIGHT - height);
     }
 
     @Override

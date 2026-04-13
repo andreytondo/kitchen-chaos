@@ -1,11 +1,13 @@
 package io.github.andreytondo.entity;
 
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import io.github.andreytondo.component.BasicMovement;
 import io.github.andreytondo.component.Health;
 import io.github.andreytondo.contract.HasHealth;
 import io.github.andreytondo.contract.Movement;
 import io.github.andreytondo.contract.Updatable;
+import io.github.andreytondo.utils.Constants;
 import lombok.Getter;
 
 @Getter
@@ -33,5 +35,10 @@ public abstract class BaseActor extends BaseEntity implements Updatable, HasHeal
         }
 
         movementComponent.move(position, direction, effectiveSpeed, delta);
+    }
+
+    protected void clampToWorld() {
+        position.x = MathUtils.clamp(position.x, 0f, Constants.WORLD_WIDTH - width);
+        position.y = MathUtils.clamp(position.y, 0f, Constants.WORLD_HEIGHT - height);
     }
 }

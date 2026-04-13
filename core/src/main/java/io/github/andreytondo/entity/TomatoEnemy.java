@@ -29,6 +29,7 @@ public class TomatoEnemy extends BaseActor implements Renderable {
         }
 
         behavior.execute(target, this, delta);
+        clampToWorld();
     }
 
     @Override

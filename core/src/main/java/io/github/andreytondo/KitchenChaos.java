@@ -1,12 +1,27 @@
 package io.github.andreytondo;
 
 import com.badlogic.gdx.Game;
+import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.graphics.Texture;
 import io.github.andreytondo.screen.GameScreen;
+import io.github.andreytondo.utils.Assets;
 
 public class KitchenChaos extends Game {
 
+    private AssetManager assets;
+
     @Override
     public void create() {
-        setScreen(new GameScreen());
+        assets = new AssetManager();
+        assets.load(Assets.PLAYER, Texture.class);
+        assets.load(Assets.TOMATO, Texture.class);
+        assets.finishLoading();
+        setScreen(new GameScreen(assets));
+    }
+
+    @Override
+    public void dispose() {
+        super.dispose();
+        assets.dispose();
     }
 }

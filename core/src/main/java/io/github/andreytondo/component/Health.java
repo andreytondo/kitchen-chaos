@@ -27,5 +27,9 @@ public class Health {
     public float getPercent() {
         return currentHealth / maxHealth;
     }
+
+    public void reset() {
+        currentHealth = maxHealth;
+    }
 }
 

@@ -8,12 +8,18 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class MeleeChaseAI implements EnemyBehavior {
     private final Attack attack;
+    private final Vector2 dir = new Vector2();
 
     @Override
     public void execute(BaseActor target, BaseActor self, float delta) {
         attack.update(delta);
-        Vector2 dir = target.getPosition().cpy().sub(self.getPosition()).nor();
+        dir.set(target.getPosition()).sub(self.getPosition()).nor();
         attack.tryAttack(target, self);
         self.move(dir, delta);
+    }
+
+    @Override
+    public void reset() {
+        attack.reset();
     }
 }

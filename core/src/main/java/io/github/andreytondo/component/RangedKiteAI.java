@@ -9,12 +9,13 @@ import lombok.RequiredArgsConstructor;
 public class RangedKiteAI implements EnemyBehavior {
     private final Attack attack;
     private final float preferredDistance;
+    private final Vector2 toTarget = new Vector2();
 
     @Override
     public void execute(BaseActor target, BaseActor self, float delta) {
         attack.update(delta);
         float dist = target.getPosition().dst(self.getPosition());
-        Vector2 toTarget = target.getPosition().cpy().sub(self.getPosition()).nor();
+        toTarget.set(target.getPosition()).sub(self.getPosition()).nor();
 
         if (dist < preferredDistance) {
             self.move(toTarget.scl(-1), delta);
@@ -23,5 +24,10 @@ public class RangedKiteAI implements EnemyBehavior {
         }
 
         attack.tryAttack(target, self);
+    }
+
+    @Override
+    public void reset() {
+        attack.reset();
     }
 }

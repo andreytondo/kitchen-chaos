@@ -5,12 +5,14 @@ import io.github.andreytondo.contract.Movement;
 
 public class BasicMovement implements Movement {
 
+    private final Vector2 scratch = new Vector2();
+
     @Override
     public void move(Vector2 position, Vector2 direction, float speed, float delta) {
         if (direction == null || direction.isZero()) {
             return;
         }
 
-        position.mulAdd(new Vector2(direction).nor(), speed * delta);
+        position.mulAdd(scratch.set(direction).nor(), speed * delta);
     }
 }

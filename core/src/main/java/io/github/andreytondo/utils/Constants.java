@@ -17,4 +17,6 @@ public class Constants {
     public static final float TOMATO_SIZE = WORLD_WIDTH * 0.075f;  // ~96px at 1920
     public static final float TOMATO_SPEED = WORLD_WIDTH * 0.172f;  // ~220px/s at 1280
     public static final float TOMATO_HEALTH = 100F;
+
+    public static final float TILE_SIZE = 128f;
 }

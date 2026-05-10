@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.utils.Pool;
 import io.github.andreytondo.entity.BaseActor;
 import io.github.andreytondo.entity.Player;
 import io.github.andreytondo.entity.TomatoEnemy;
@@ -16,39 +17,85 @@ import io.github.andreytondo.utils.Assets;
 import io.github.andreytondo.utils.Constants;
 import io.github.andreytondo.utils.GameRenderer;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class GameScreen implements Screen {
+
+    private static final int   WAVE_BASE_COUNT = 4;
+    private static final float SPAWN_OFFSET    = 300f;
 
     private final Game game;
     private final AssetManager assets;
     private final OrthographicCamera camera;
     private final GameRenderer gameRenderer;
+    private final Texture floorTex;
     private final Player player;
-    private final List<TomatoEnemy> enemies;
+
+    private final Pool<TomatoEnemy> enemyPool;
+    private final List<TomatoEnemy> enemies = new ArrayList<>();
+
+    private int wave = 0;
 
     public GameScreen(Game game, AssetManager assets) {
         this.game = game;
         this.assets = assets;
         this.camera = new OrthographicCamera();
         this.camera.setToOrtho(false, Constants.WORLD_WIDTH, Constants.WORLD_HEIGHT);
-
         this.gameRenderer = new GameRenderer();
 
-        Texture playerTexture = assets.get(Assets.PLAYER, Texture.class);
-        Texture tomatoTexture = assets.get(Assets.TOMATO, Texture.class);
+        Texture playerTexture = assets.get(Assets.PLAYER,      Texture.class);
+        Texture tomatoWalkTex = assets.get(Assets.TOMATO_WALK,  Texture.class);
+        this.floorTex         = assets.get(Assets.TILE_FLOOR,   Texture.class);
 
-        float cx = Constants.WORLD_WIDTH / 2f;
+        float cx = Constants.WORLD_WIDTH  / 2f;
         float cy = Constants.WORLD_HEIGHT / 2f;
         this.player = new Player(cx, cy, playerTexture);
 
-        float offset = 300f;
-        this.enemies = List.of(
-            new TomatoEnemy(cx - offset, cy - offset, player, tomatoTexture),
-            new TomatoEnemy(cx + offset, cy - offset, player, tomatoTexture),
-            new TomatoEnemy(cx - offset, cy + offset, player, tomatoTexture),
-            new TomatoEnemy(cx + offset, cy + offset, player, tomatoTexture)
-        );
+        enemyPool = new Pool<TomatoEnemy>() {
+            @Override
+            protected TomatoEnemy newObject() {
+                return new TomatoEnemy(0, 0, player, tomatoWalkTex);
+            }
+        };
+
+        spawnWave();
+    }
+
+    // -------------------------------------------------------------------------
+    // Wave management
+    // -------------------------------------------------------------------------
+
+    private void spawnWave() {
+        wave++;
+        float cx = Constants.WORLD_WIDTH  / 2f;
+        float cy = Constants.WORLD_HEIGHT / 2f;
+
+        int count = WAVE_BASE_COUNT + (wave - 1);
+        for (int i = 0; i < count; i++) {
+            float angle  = (float)(2 * Math.PI * i / count);
+            float radius = SPAWN_OFFSET + (wave - 1) * 80f;
+            float ex     = cx + (float)Math.cos(angle) * radius;
+            float ey     = cy + (float)Math.sin(angle) * radius;
+
+            TomatoEnemy e = enemyPool.obtain();
+            e.init(ex, ey);
+            enemies.add(e);
+        }
+    }
+
+    private void checkWaveComplete() {
+        for (TomatoEnemy e : enemies) {
+            if (e.isActive()) return;
+        }
+        for (TomatoEnemy e : enemies) enemyPool.free(e);
+        enemies.clear();
+        spawnWave();
+    }
+
+    @Override
+    public void show() {
+        Gdx.input.setInputProcessor(player.getInputProcessor());
     }
 
     @Override
@@ -62,12 +109,12 @@ public class GameScreen implements Screen {
 
         gameRenderer.getBatch().setProjectionMatrix(camera.combined);
         gameRenderer.getBatch().begin();
+        drawFloor(gameRenderer);
         if (player.isActive()) player.render(gameRenderer);
         for (TomatoEnemy enemy : enemies) {
             if (enemy.isActive()) enemy.render(gameRenderer);
         }
         gameRenderer.getBatch().end();
-
 
         Gdx.gl.glEnable(GL20.GL_BLEND);
         ShapeRenderer sr = gameRenderer.getShapeRenderer();
@@ -80,19 +127,23 @@ public class GameScreen implements Screen {
         sr.end();
     }
 
-    private static final float BAR_HEIGHT = 8f;
-    private static final float BAR_GAP = 4f;
+    @Override
+    public void resize(int width, int height) {
+        camera.setToOrtho(false, Constants.WORLD_WIDTH, Constants.WORLD_HEIGHT);
+    }
 
-    private void drawHealthBar(ShapeRenderer sr, BaseActor actor, Color fillColor) {
-        float x = actor.getX();
-        float y = actor.getY() + actor.getHeight() + BAR_GAP;
-        float w = actor.getWidth();
-        float filled = w * actor.getHealth().getPercent();
+    @Override public void pause()  {}
+    @Override public void resume() {}
 
-        sr.setColor(0.2f, 0.2f, 0.2f, 1f);
-        sr.rect(x, y, w, BAR_HEIGHT);
-        sr.setColor(fillColor);
-        sr.rect(x, y, filled, BAR_HEIGHT);
+    @Override
+    public void hide() {
+        player.getInputProcessor().reset();
+        Gdx.input.setInputProcessor(null);
+    }
+
+    @Override
+    public void dispose() {
+        gameRenderer.dispose();
     }
 
     private void update(float delta) {
@@ -108,6 +159,31 @@ public class GameScreen implements Screen {
             }
         }
         resolveCollisions();
+        checkWaveComplete();
+    }
+
+    private void drawFloor(GameRenderer renderer) {
+        float t = Constants.TILE_SIZE;
+        for (float x = 0; x < Constants.WORLD_WIDTH; x += t) {
+            for (float y = 0; y < Constants.WORLD_HEIGHT; y += t) {
+                renderer.getBatch().draw(floorTex, x, y, t, t);
+            }
+        }
+    }
+
+    private static final float BAR_HEIGHT = 8f;
+    private static final float BAR_GAP    = 4f;
+
+    private void drawHealthBar(ShapeRenderer sr, BaseActor actor, Color fillColor) {
+        float x      = actor.getX();
+        float y      = actor.getY() + actor.getHeight() + BAR_GAP;
+        float w      = actor.getWidth();
+        float filled = w * actor.getHealth().getPercent();
+
+        sr.setColor(0.2f, 0.2f, 0.2f, 1f);
+        sr.rect(x, y, w, BAR_HEIGHT);
+        sr.setColor(fillColor);
+        sr.rect(x, y, filled, BAR_HEIGHT);
     }
 
     private void resolveCollisions() {
@@ -128,12 +204,12 @@ public class GameScreen implements Screen {
     }
 
     private static void pushApart(BaseActor a, BaseActor b) {
-        float ax = a.getX() + a.getWidth() / 2f;
+        float ax = a.getX() + a.getWidth()  / 2f;
         float ay = a.getY() + a.getHeight() / 2f;
-        float bx = b.getX() + b.getWidth() / 2f;
+        float bx = b.getX() + b.getWidth()  / 2f;
         float by = b.getY() + b.getHeight() / 2f;
 
-        float overlapX = (a.getWidth() / 2f + b.getWidth() / 2f) - Math.abs(ax - bx);
+        float overlapX = (a.getWidth()  / 2f + b.getWidth()  / 2f) - Math.abs(ax - bx);
         float overlapY = (a.getHeight() / 2f + b.getHeight() / 2f) - Math.abs(ay - by);
 
         if (overlapX <= 0 || overlapY <= 0) return;
@@ -145,31 +221,5 @@ public class GameScreen implements Screen {
             if (ay < by) b.getPosition().y += overlapY;
             else         b.getPosition().y -= overlapY;
         }
-    }
-
-    @Override
-    public void show() {
-    }
-
-    @Override
-    public void resize(int width, int height) {
-        camera.setToOrtho(false, Constants.WORLD_WIDTH, Constants.WORLD_HEIGHT);
-    }
-
-    @Override
-    public void pause() {
-    }
-
-    @Override
-    public void resume() {
-    }
-
-    @Override
-    public void hide() {
-    }
-
-    @Override
-    public void dispose() {
-        gameRenderer.dispose();
     }
 }

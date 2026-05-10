@@ -43,6 +43,10 @@ public class Player extends BaseActor implements Renderable {
         clampToWorld();
     }
 
+    public PlayerInput getInputProcessor() {
+        return input;
+    }
+
     public boolean tryAttack(BaseActor target) {
         if (!input.isAttackPressed()) return false;
         return attack.tryAttack(target, this);

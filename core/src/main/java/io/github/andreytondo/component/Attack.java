@@ -31,4 +31,8 @@ public class Attack {
     }
 
     public boolean isReady() { return cooldownTimer <= 0; }
+
+    public void reset() {
+        cooldownTimer = 0;
+    }
 }

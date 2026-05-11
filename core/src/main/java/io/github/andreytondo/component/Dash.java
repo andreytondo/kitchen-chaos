@@ -1,36 +1,37 @@
 package io.github.andreytondo.component;
 
-import lombok.RequiredArgsConstructor;
+import com.badlogic.gdx.audio.Sound;
 
-@RequiredArgsConstructor
 public class Dash {
-    private final float duration;
-    private final float cooldown;
+    private final Timer activeTimer;
+    private final Timer cooldownTimer;
     private final float speedMultiplier;
+    private final Sound sound;
 
-    private float activeTimer;
-    private float cooldownTimer;
+    public Dash(float duration, float cooldown, float speedMultiplier, Sound sound) {
+        this.activeTimer = new Timer(duration);
+        this.cooldownTimer = new Timer(cooldown);
+        this.speedMultiplier = speedMultiplier;
+        this.sound = sound;
+    }
 
     public void update(float delta) {
-        if (activeTimer > 0) {
-            activeTimer -= delta;
-            if (activeTimer <= 0) {
-                cooldownTimer = cooldown;
-            }
-        } else if (cooldownTimer > 0) {
-            cooldownTimer -= delta;
+        boolean wasActive = activeTimer.isRunning();
+        activeTimer.update(delta);
+        if (wasActive && !activeTimer.isRunning()) {
+            cooldownTimer.start();
         }
+        cooldownTimer.update(delta);
     }
 
     public void tryActivate() {
-        if (activeTimer <= 0 && cooldownTimer <= 0) {
-            activeTimer = duration;
+        if (!activeTimer.isRunning() && !cooldownTimer.isRunning()) {
+            activeTimer.start();
+            sound.play(0.8f);
         }
     }
 
-    public boolean isActive() {
-        return activeTimer > 0;
-    }
+    public boolean isActive() { return activeTimer.isRunning(); }
 
     public float applyTo(float baseSpeed) {
         return isActive() ? baseSpeed * speedMultiplier : baseSpeed;

@@ -1,5 +1,6 @@
 package io.github.andreytondo.entity;
 
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector2;
 import io.github.andreytondo.component.Attack;
@@ -16,11 +17,11 @@ public class Player extends BaseActor implements Renderable {
     private final Attack attack;
     private final Texture texture;
 
-    public Player(float x, float y, Texture texture) {
+    public Player(float x, float y, Texture texture, Sound dashSound, Sound hitSound) {
         super(x, y, Constants.PLAYER_SIZE, Constants.PLAYER_SIZE, Constants.PLAYER_SPEED, Constants.PLAYER_HEALTH);
         this.input = new PlayerInput();
-        this.dash = new Dash(Constants.PLAYER_DASH_DURATION, Constants.PLAYER_DASH_COOLDOWN, Constants.PLAYER_DASH_MULTIPLIER);
-        this.attack = new Attack(Constants.PLAYER_ATTACK_DAMAGE, Constants.PLAYER_ATTACK_RANGE, Constants.PLAYER_ATTACK_COOLDOWN);
+        this.dash = new Dash(Constants.PLAYER_DASH_DURATION, Constants.PLAYER_DASH_COOLDOWN, Constants.PLAYER_DASH_MULTIPLIER, dashSound);
+        this.attack = new Attack(Constants.PLAYER_ATTACK_DAMAGE, Constants.PLAYER_ATTACK_RANGE, Constants.PLAYER_ATTACK_COOLDOWN, hitSound);
         this.texture = texture;
     }
 

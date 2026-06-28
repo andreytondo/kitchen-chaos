@@ -10,8 +10,8 @@ public class BossAI implements EnemyBehavior {
 
     private static final float PROJ_DAMAGE       = 20f;
     private static final float PROJ_SPEED        = 600f;
-    private static final float PHASE1_CD         = 4f;
-    private static final float PHASE2_CD         = 2f;
+    private static final float PHASE1_CD         = 2.5f;
+    private static final float PHASE2_CD         = 1.2f;
 
     private final Attack          meleeAttack;
     private final ProjectileSystem projectileSystem;

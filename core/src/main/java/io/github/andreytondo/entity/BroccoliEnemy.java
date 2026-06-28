@@ -16,7 +16,7 @@ public class BroccoliEnemy extends EnemyBase {
               Constants.BROCCOLI_SIZE, Constants.BROCCOLI_SIZE,
               0f, Constants.BROCCOLI_HEALTH,
               walkSheet, deathSound,
-              new ProjectileShooterAI(ps, 10f, Constants.PROJECTILE_SPEED * 0.65f, 2.5f, 3, 22f, false),
+              new ProjectileShooterAI(ps, 10f, Constants.PROJECTILE_SPEED * 0.65f, 1.5f, 3, 22f, false),
               target,
               0.25f,
               new Color(0.1f, 0.9f, 0.1f, 1f),  // hurtColor — bright green flash

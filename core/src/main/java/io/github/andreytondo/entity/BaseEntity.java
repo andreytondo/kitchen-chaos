@@ -12,6 +12,7 @@ public abstract class BaseEntity implements HasPosition {
     protected float width;
     protected float height;
     protected boolean active;
+    protected float hitboxScale = 1.0f;
 
     protected BaseEntity(float x, float y, float width, float height) {
         this.position = new Vector2(x, y);
@@ -27,4 +28,9 @@ public abstract class BaseEntity implements HasPosition {
     public float getY() {
         return position.y;
     }
+
+    public float getCollisionX()      { return position.x + width  * (1f - hitboxScale) / 2f; }
+    public float getCollisionY()      { return position.y + height * (1f - hitboxScale) / 2f; }
+    public float getCollisionWidth()  { return width  * hitboxScale; }
+    public float getCollisionHeight() { return height * hitboxScale; }
 }

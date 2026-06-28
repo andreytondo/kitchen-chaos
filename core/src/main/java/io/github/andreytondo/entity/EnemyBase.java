@@ -42,6 +42,8 @@ public abstract class EnemyBase extends BaseActor implements Renderable, Pool.Po
         for (int i = 0; i < FRAME_COUNT; i++) {
             frames[i] = new TextureRegion(walkSheet, i * FRAME_PX, 0, FRAME_PX, FRAME_PX);
         }
+        // Sprite frames have empty padding; shrink hitbox to match visible character
+        hitboxScale = 0.6f;
     }
 
     public void init(float x, float y) {

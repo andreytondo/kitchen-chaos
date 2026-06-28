@@ -19,6 +19,7 @@ public class KitchenChaos extends Game {
         assets.load(Assets.TOMATO,      Texture.class);
         assets.load(Assets.TOMATO_WALK, Texture.class);
         assets.load(Assets.TILE_FLOOR,  Texture.class);
+        assets.load(Assets.TILE_WALL,   Texture.class);
         assets.load(Assets.SFX_DASH,    Sound.class);
         assets.load(Assets.SFX_HIT,     Sound.class);
         assets.load(Assets.SFX_DEATH,   Sound.class);

@@ -5,18 +5,18 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.Pool;
 import io.github.andreytondo.component.Attack;
-import io.github.andreytondo.component.MeleeChaseAI;
+import io.github.andreytondo.component.RangedKiteAI;
 import io.github.andreytondo.component.Timer;
 import io.github.andreytondo.contract.EnemyBehavior;
 import io.github.andreytondo.contract.Renderable;
 import io.github.andreytondo.utils.Constants;
 import io.github.andreytondo.utils.GameRenderer;
 
-public class TomatoEnemy extends BaseActor implements Renderable, Pool.Poolable {
+public class RangedEnemy extends BaseActor implements Renderable, Pool.Poolable {
 
     private static final int   FRAME_COUNT    = 4;
     private static final int   FRAME_PX       = 64;
-    private static final float FRAME_DURATION = 0.12f;
+    private static final float FRAME_DURATION = 0.18f;
     private static final float HURT_DURATION  = 0.15f;
 
     private final EnemyBehavior   behavior;
@@ -26,9 +26,10 @@ public class TomatoEnemy extends BaseActor implements Renderable, Pool.Poolable 
     private final Timer           hurtFlashTimer = new Timer(HURT_DURATION);
     private float animTime = 0f;
 
-    public TomatoEnemy(float x, float y, BaseActor target, Texture walkSheet, Sound deathSound) {
-        super(x, y, Constants.TOMATO_SIZE, Constants.TOMATO_SIZE, Constants.TOMATO_SPEED, Constants.TOMATO_HEALTH);
-        this.behavior = new MeleeChaseAI(new Attack(10f, Constants.TOMATO_SIZE, 2f));
+    public RangedEnemy(float x, float y, BaseActor target, Texture walkSheet, Sound deathSound) {
+        super(x, y, Constants.RANGED_SIZE, Constants.RANGED_SIZE, Constants.RANGED_SPEED, Constants.RANGED_HEALTH);
+        Attack attack = new Attack(8f, Constants.RANGED_PREFERRED_DIST * 0.9f, 2.0f);
+        this.behavior = new RangedKiteAI(attack, Constants.RANGED_PREFERRED_DIST);
         this.target = target;
         this.deathSound = deathSound;
 
@@ -78,7 +79,7 @@ public class TomatoEnemy extends BaseActor implements Renderable, Pool.Poolable 
     @Override
     public void render(GameRenderer renderer) {
         if (hurtFlashTimer.isRunning()) {
-            renderer.getBatch().setColor(1f, 0.3f, 0.3f, 1f);
+            renderer.getBatch().setColor(0.3f, 1f, 0.3f, 1f);
         }
         int frame = (int)(animTime / FRAME_DURATION) % FRAME_COUNT;
         renderer.getBatch().draw(frames[frame], getX(), getY(), getWidth(), getHeight());

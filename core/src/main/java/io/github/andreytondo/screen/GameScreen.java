@@ -14,38 +14,43 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Pool;
 import io.github.andreytondo.entity.BaseActor;
+import io.github.andreytondo.entity.EnemySpawner;
 import io.github.andreytondo.entity.Player;
+import io.github.andreytondo.entity.RangedEnemy;
 import io.github.andreytondo.entity.TomatoEnemy;
+import io.github.andreytondo.map.MapGenerator;
+import io.github.andreytondo.map.Room;
 import io.github.andreytondo.utils.Assets;
 import io.github.andreytondo.utils.Constants;
 import io.github.andreytondo.utils.GameRenderer;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class GameScreen implements Screen {
 
-    private static final int   WAVE_BASE_COUNT = 4;
-    private static final float SPAWN_OFFSET    = 300f;
-    private static final float MIN_ZOOM        = 0.35f;
-    private static final float MAX_ZOOM        = 1.5f;
-    private static final float CAMERA_LERP     = 5f;
+    private static final float MIN_ZOOM    = 0.35f;
+    private static final float MAX_ZOOM    = 1.5f;
+    private static final float CAMERA_LERP = 5f;
 
     private final Game game;
     private final AssetManager assets;
     private final OrthographicCamera camera;
     private final GameRenderer gameRenderer;
     private final Texture floorTex;
+    private final Texture wallTex;
     private final Player player;
     private final Music music;
 
-    private final Pool<TomatoEnemy> enemyPool;
-    private final List<TomatoEnemy> enemies = new ArrayList<>();
-
-    private int wave = 0;
+    private final List<BaseActor> enemies = new ArrayList<>();
+    private final EnemySpawner spawner;
+    private final List<Room> rooms;
+    private int currentRoomIndex = 0;
 
     private final Vector3 tmpVec = new Vector3();
 
@@ -53,63 +58,41 @@ public class GameScreen implements Screen {
         this.game = game;
         this.assets = assets;
         this.camera = new OrthographicCamera();
-        this.camera.setToOrtho(false, Constants.WORLD_WIDTH, Constants.WORLD_HEIGHT);
+        this.camera.setToOrtho(false, Constants.ROOM_WIDTH, Constants.ROOM_HEIGHT);
         this.gameRenderer = new GameRenderer();
 
         Texture playerTexture = assets.get(Assets.PLAYER,      Texture.class);
-        Texture tomatoWalkTex = assets.get(Assets.TOMATO_WALK,  Texture.class);
-        this.floorTex         = assets.get(Assets.TILE_FLOOR,   Texture.class);
+        Texture tomatoWalkTex = assets.get(Assets.TOMATO_WALK, Texture.class);
+        this.floorTex         = assets.get(Assets.TILE_FLOOR,  Texture.class);
+        this.wallTex          = assets.get(Assets.TILE_WALL,   Texture.class);
 
         Sound dashSound  = assets.get(Assets.SFX_DASH,  Sound.class);
         Sound hitSound   = assets.get(Assets.SFX_HIT,   Sound.class);
         Sound deathSound = assets.get(Assets.SFX_DEATH, Sound.class);
         this.music       = assets.get(Assets.MUSIC,     Music.class);
 
-        float cx = Constants.WORLD_WIDTH  / 2f;
-        float cy = Constants.WORLD_HEIGHT / 2f;
+        float cx = Constants.ROOM_WIDTH  / 2f;
+        float cy = Constants.ROOM_HEIGHT / 2f;
         this.player = new Player(cx, cy, playerTexture, dashSound, hitSound);
-
         camera.position.set(cx, cy, 0);
 
-        enemyPool = new Pool<TomatoEnemy>() {
+        Pool<TomatoEnemy> tomatoPool = new Pool<TomatoEnemy>() {
             @Override
             protected TomatoEnemy newObject() {
                 return new TomatoEnemy(0, 0, player, tomatoWalkTex, deathSound);
             }
         };
 
-        spawnWave();
-    }
+        Pool<RangedEnemy> rangedPool = new Pool<RangedEnemy>() {
+            @Override
+            protected RangedEnemy newObject() {
+                return new RangedEnemy(0, 0, player, tomatoWalkTex, deathSound);
+            }
+        };
 
-    // -------------------------------------------------------------------------
-    // Wave management
-    // -------------------------------------------------------------------------
-
-    private void spawnWave() {
-        wave++;
-        float cx = Constants.WORLD_WIDTH  / 2f;
-        float cy = Constants.WORLD_HEIGHT / 2f;
-
-        int count = WAVE_BASE_COUNT + (wave - 1);
-        for (int i = 0; i < count; i++) {
-            float angle  = (float)(2 * Math.PI * i / count);
-            float radius = SPAWN_OFFSET + (wave - 1) * 80f;
-            float ex     = cx + (float)Math.cos(angle) * radius;
-            float ey     = cy + (float)Math.sin(angle) * radius;
-
-            TomatoEnemy e = enemyPool.obtain();
-            e.init(ex, ey);
-            enemies.add(e);
-        }
-    }
-
-    private void checkWaveComplete() {
-        for (TomatoEnemy e : enemies) {
-            if (e.isActive()) return;
-        }
-        for (TomatoEnemy e : enemies) enemyPool.free(e);
-        enemies.clear();
-        spawnWave();
+        spawner = new EnemySpawner(tomatoPool, rangedPool, enemies);
+        rooms   = new MapGenerator().generate(4, new Random());
+        spawner.spawnRoom(rooms.get(0), player);
     }
 
     @Override
@@ -141,10 +124,10 @@ public class GameScreen implements Screen {
 
         gameRenderer.getBatch().setProjectionMatrix(camera.combined);
         gameRenderer.getBatch().begin();
-        drawFloor(gameRenderer);
+        drawRoom(gameRenderer);
         if (player.isActive()) player.render(gameRenderer);
-        for (TomatoEnemy enemy : enemies) {
-            if (enemy.isActive()) enemy.render(gameRenderer);
+        for (BaseActor enemy : enemies) {
+            if (enemy.isActive()) ((io.github.andreytondo.contract.Renderable) enemy).render(gameRenderer);
         }
         gameRenderer.getBatch().end();
 
@@ -153,7 +136,7 @@ public class GameScreen implements Screen {
         sr.setProjectionMatrix(camera.combined);
         sr.begin(ShapeRenderer.ShapeType.Filled);
         if (player.isActive()) drawHealthBar(sr, player, Color.GREEN);
-        for (TomatoEnemy enemy : enemies) {
+        for (BaseActor enemy : enemies) {
             if (enemy.isActive()) drawHealthBar(sr, enemy, Color.RED);
         }
         sr.end();
@@ -163,7 +146,7 @@ public class GameScreen implements Screen {
     public void resize(int width, int height) {
         Vector3 savedPos = camera.position.cpy();
         float savedZoom = camera.zoom;
-        camera.setToOrtho(false, Constants.WORLD_WIDTH, Constants.WORLD_HEIGHT);
+        camera.setToOrtho(false, Constants.ROOM_WIDTH, Constants.ROOM_HEIGHT);
         camera.position.set(savedPos);
         camera.zoom = savedZoom;
     }
@@ -189,15 +172,42 @@ public class GameScreen implements Screen {
             game.setScreen(new GameOverScreen(game, assets));
             return;
         }
-        for (TomatoEnemy enemy : enemies) {
+        for (int i = 0; i < enemies.size(); i++) {
+            BaseActor enemy = enemies.get(i);
             if (enemy.isActive()) {
                 enemy.update(delta);
                 player.tryAttack(enemy);
             }
         }
         resolveCollisions();
-        checkWaveComplete();
+        checkRoomComplete();
+        checkDoorTransition();
         updateCamera(delta);
+    }
+
+    private void checkRoomComplete() {
+        if (rooms.get(currentRoomIndex).isCompleted()) return;
+        for (BaseActor e : enemies) {
+            if (e.isActive()) return;
+        }
+        rooms.get(currentRoomIndex).markCompleted();
+    }
+
+    private void checkDoorTransition() {
+        Room room = rooms.get(currentRoomIndex);
+        if (!room.isExitOpen()) return;
+        float px = player.getX() + player.getWidth()  / 2f;
+        float py = player.getY() + player.getHeight() / 2f;
+        if (!room.getExitDoor().contains(px, py)) return;
+
+        currentRoomIndex++;
+        if (currentRoomIndex >= rooms.size()) {
+            game.setScreen(new GameOverScreen(game, assets));
+            return;
+        }
+        // Place player at west entry of next room
+        player.getPosition().set(Constants.TILE_SIZE * 1.5f, Constants.ROOM_HEIGHT / 2f - Constants.PLAYER_SIZE / 2f);
+        spawner.spawnRoom(rooms.get(currentRoomIndex), player);
     }
 
     private void updateCamera(float delta) {
@@ -205,7 +215,7 @@ public class GameScreen implements Screen {
         float targetY = player.getY() + player.getHeight() / 2f;
 
         tmpVec.set(targetX, targetY, 0);
-        camera.project(tmpVec);   // tmpVec now holds screen coordinates
+        camera.project(tmpVec);
 
         float screenW = Gdx.graphics.getWidth();
         float screenH = Gdx.graphics.getHeight();
@@ -228,11 +238,11 @@ public class GameScreen implements Screen {
         float halfW = camera.viewportWidth  * camera.zoom * 0.5f;
         float halfH = camera.viewportHeight * camera.zoom * 0.5f;
         camera.position.x = MathUtils.clamp(camera.position.x,
-            Math.min(halfW, Constants.WORLD_WIDTH  - halfW),
-            Math.max(halfW, Constants.WORLD_WIDTH  - halfW));
+            Math.min(halfW, Constants.ROOM_WIDTH  - halfW),
+            Math.max(halfW, Constants.ROOM_WIDTH  - halfW));
         camera.position.y = MathUtils.clamp(camera.position.y,
-            Math.min(halfH, Constants.WORLD_HEIGHT - halfH),
-            Math.max(halfH, Constants.WORLD_HEIGHT - halfH));
+            Math.min(halfH, Constants.ROOM_HEIGHT - halfH),
+            Math.max(halfH, Constants.ROOM_HEIGHT - halfH));
     }
 
     private void handleZoom(float scrollAmount) {
@@ -240,7 +250,7 @@ public class GameScreen implements Screen {
         int mouseScreenY = Gdx.input.getY();
 
         tmpVec.set(mouseScreenX, mouseScreenY, 0);
-        camera.unproject(tmpVec);   // tmpVec now holds world coords
+        camera.unproject(tmpVec);
         float worldX = tmpVec.x;
         float worldY = tmpVec.y;
 
@@ -248,7 +258,7 @@ public class GameScreen implements Screen {
         camera.update();
 
         tmpVec.set(mouseScreenX, mouseScreenY, 0);
-        camera.unproject(tmpVec);   // tmpVec now holds new world coords for same screen point
+        camera.unproject(tmpVec);
 
         camera.position.x += worldX - tmpVec.x;
         camera.position.y += worldY - tmpVec.y;
@@ -256,11 +266,13 @@ public class GameScreen implements Screen {
         clampCameraToWorld();
     }
 
-    private void drawFloor(GameRenderer renderer) {
+    private void drawRoom(GameRenderer renderer) {
+        Room room = rooms.get(currentRoomIndex);
         float t = Constants.TILE_SIZE;
-        for (float x = 0; x < Constants.WORLD_WIDTH; x += t) {
-            for (float y = 0; y < Constants.WORLD_HEIGHT; y += t) {
-                renderer.getBatch().draw(floorTex, x, y, t, t);
+        for (int c = 0; c < Constants.ROOM_COLS; c++) {
+            for (int r = 0; r < Constants.ROOM_ROWS; r++) {
+                Texture tex = room.isWall(c, r) ? wallTex : floorTex;
+                renderer.getBatch().draw(tex, c * t, r * t, t, t);
             }
         }
     }
@@ -281,19 +293,59 @@ public class GameScreen implements Screen {
     }
 
     private void resolveCollisions() {
-        for (TomatoEnemy enemy : enemies) {
+        for (int i = 0; i < enemies.size(); i++) {
+            BaseActor enemy = enemies.get(i);
             if (player.isActive() && enemy.isActive()) {
                 pushApart(player, enemy);
             }
         }
         for (int i = 0; i < enemies.size(); i++) {
             for (int j = i + 1; j < enemies.size(); j++) {
-                TomatoEnemy a = enemies.get(i);
-                TomatoEnemy b = enemies.get(j);
+                BaseActor a = enemies.get(i);
+                BaseActor b = enemies.get(j);
                 if (a.isActive() && b.isActive()) {
                     pushApart(a, b);
                 }
             }
+        }
+        resolveWallCollisions();
+    }
+
+    private void resolveWallCollisions() {
+        List<Rectangle> walls = rooms.get(currentRoomIndex).getWallRects();
+        pushActorOutOfWalls(player, walls);
+        for (BaseActor e : enemies) {
+            if (e.isActive()) pushActorOutOfWalls(e, walls);
+        }
+    }
+
+    private static void pushActorOutOfWalls(BaseActor actor, List<Rectangle> walls) {
+        float ax = actor.getX();
+        float ay = actor.getY();
+        float aw = actor.getWidth();
+        float ah = actor.getHeight();
+
+        for (Rectangle wall : walls) {
+            float overlapX = Math.min(ax + aw, wall.x + wall.width)  - Math.max(ax, wall.x);
+            float overlapY = Math.min(ay + ah, wall.y + wall.height) - Math.max(ay, wall.y);
+
+            if (overlapX <= 0 || overlapY <= 0) continue;
+
+            if (overlapX < overlapY) {
+                float actorCX = ax + aw / 2f;
+                float wallCX  = wall.x + wall.width / 2f;
+                if (actorCX < wallCX) actor.getPosition().x -= overlapX;
+                else                  actor.getPosition().x += overlapX;
+            } else {
+                float actorCY = ay + ah / 2f;
+                float wallCY  = wall.y + wall.height / 2f;
+                if (actorCY < wallCY) actor.getPosition().y -= overlapY;
+                else                  actor.getPosition().y += overlapY;
+            }
+
+            // Re-read position after push for next wall test
+            ax = actor.getX();
+            ay = actor.getY();
         }
     }
 

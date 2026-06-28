@@ -40,8 +40,6 @@ public class Player extends BaseActor implements Renderable {
 
         Vector2 direction = input.getMovementDirection();
         move(direction, dash.applyTo(speed), delta);
-
-        clampToWorld();
     }
 
     public PlayerInput getInputProcessor() {

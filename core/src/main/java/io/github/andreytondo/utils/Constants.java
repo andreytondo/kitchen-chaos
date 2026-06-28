@@ -19,4 +19,14 @@ public class Constants {
     public static final float TOMATO_HEALTH = 100F;
 
     public static final float TILE_SIZE = 128f;
+
+    public static final int   ROOM_COLS             = 15;
+    public static final int   ROOM_ROWS             = 10;
+    public static final float ROOM_WIDTH            = ROOM_COLS * TILE_SIZE;
+    public static final float ROOM_HEIGHT           = ROOM_ROWS * TILE_SIZE;
+
+    public static final float RANGED_SIZE           = WORLD_WIDTH * 0.065f;
+    public static final float RANGED_SPEED          = WORLD_WIDTH * 0.10f;
+    public static final float RANGED_HEALTH         = 60f;
+    public static final float RANGED_PREFERRED_DIST = ROOM_WIDTH * 0.25f;
 }

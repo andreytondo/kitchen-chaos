@@ -22,19 +22,21 @@ public abstract class EnemyBase extends BaseActor implements Renderable, Pool.Po
     private final Sound           deathSound;
     private final Timer           hurtFlashTimer = new Timer(HURT_DURATION);
     private final Color           hurtColor;
+    private final Color           baseColor;
     private final float           frameDuration;
     private float animTime = 0f;
 
     protected EnemyBase(float x, float y, float width, float height, float speed, float maxHealth,
                         Texture walkSheet, Sound deathSound,
                         EnemyBehavior behavior, BaseActor target,
-                        float frameDuration, Color hurtColor) {
+                        float frameDuration, Color hurtColor, Color baseColor) {
         super(x, y, width, height, speed, maxHealth);
         this.behavior      = behavior;
         this.target        = target;
         this.deathSound    = deathSound;
         this.frameDuration = frameDuration;
         this.hurtColor     = hurtColor;
+        this.baseColor     = baseColor;
 
         frames = new TextureRegion[FRAME_COUNT];
         for (int i = 0; i < FRAME_COUNT; i++) {
@@ -80,9 +82,7 @@ public abstract class EnemyBase extends BaseActor implements Renderable, Pool.Po
 
     @Override
     public void render(GameRenderer renderer) {
-        if (hurtFlashTimer.isRunning()) {
-            renderer.getBatch().setColor(hurtColor);
-        }
+        renderer.getBatch().setColor(hurtFlashTimer.isRunning() ? hurtColor : baseColor);
         int frame = (int)(animTime / frameDuration) % FRAME_COUNT;
         renderer.getBatch().draw(frames[frame], getX(), getY(), getWidth(), getHeight());
         renderer.getBatch().setColor(1f, 1f, 1f, 1f);

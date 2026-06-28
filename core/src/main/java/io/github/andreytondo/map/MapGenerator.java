@@ -8,7 +8,6 @@ import java.util.Random;
 
 public class MapGenerator {
 
-    // Interior spawn area: stay away from walls and their adjacent tiles
     private static final int SPAWN_COL_MIN = 2;
     private static final int SPAWN_COL_MAX = Constants.ROOM_COLS - 3;
     private static final int SPAWN_ROW_MIN = 2;
@@ -17,35 +16,62 @@ public class MapGenerator {
     public List<Room> generate(int numRooms, Random rng) {
         List<Room> rooms = new ArrayList<>();
         for (int i = 0; i < numRooms; i++) {
-            boolean hasEntry = i > 0;
-            boolean hasExit  = i < numRooms - 1;
-            Room room = new Room(hasEntry, hasExit);
-            populateEnemies(room, i, numRooms, rng);
+            boolean  hasEntry = i > 0;
+            boolean  hasExit  = i < numRooms - 1;
+            RoomType type     = roomTypeFor(i, numRooms);
+            Room     room     = new Room(hasEntry, hasExit, type);
+            if (type != RoomType.HEALING) populateEnemies(room, i, numRooms, rng, type);
             rooms.add(room);
         }
         return rooms;
     }
 
-    private void populateEnemies(Room room, int roomIndex, int totalRooms, Random rng) {
-        int baseCount = 3 + roomIndex;
-        boolean isLastRoom = roomIndex == totalRooms - 1;
-        if (isLastRoom) baseCount += 2;
+    // Layout: …COMBAT…, HEALING, BOSS
+    private RoomType roomTypeFor(int index, int total) {
+        if (index == total - 1)             return RoomType.BOSS;
+        if (total >= 4 && index == total - 2) return RoomType.HEALING;
+        return RoomType.COMBAT;
+    }
 
-        int tomatoCount  = baseCount;
-        int rangedCount  = 0;
-
-        if (roomIndex > 0) {
-            rangedCount = 1 + (roomIndex / 2);
-            tomatoCount = baseCount - rangedCount;
-            if (tomatoCount < 1) tomatoCount = 1;
+    private void populateEnemies(Room room, int roomIndex, int totalRooms, Random rng, RoomType type) {
+        if (type == RoomType.BOSS) {
+            // Boss room: 1 boss in the centre + 2 shrimp escorts
+            float cx = (Constants.ROOM_COLS / 2f - 1) * Constants.TILE_SIZE;
+            float cy = (Constants.ROOM_ROWS / 2f - 1) * Constants.TILE_SIZE;
+            room.addSpawn(Room.EnemyType.BOSS,   cx,                  cy);
+            room.addSpawn(Room.EnemyType.SHRIMP, randomX(rng),        randomY(rng));
+            room.addSpawn(Room.EnemyType.SHRIMP, randomX(rng),        randomY(rng));
+            return;
         }
-        if (isLastRoom && rangedCount == 0) rangedCount = 1;
 
-        for (int i = 0; i < tomatoCount; i++) {
-            room.addSpawn(Room.EnemyType.TOMATO, randomX(rng), randomY(rng));
-        }
-        for (int i = 0; i < rangedCount; i++) {
-            room.addSpawn(Room.EnemyType.RANGED, randomX(rng), randomY(rng));
+        // COMBAT rooms
+        switch (roomIndex) {
+            case 0 -> {
+                // Tutorial room: tomatoes only
+                room.addSpawn(Room.EnemyType.TOMATO, randomX(rng), randomY(rng));
+                room.addSpawn(Room.EnemyType.TOMATO, randomX(rng), randomY(rng));
+                room.addSpawn(Room.EnemyType.TOMATO, randomX(rng), randomY(rng));
+            }
+            case 1 -> {
+                // Introduce new enemy types
+                room.addSpawn(Room.EnemyType.TOMATO,   randomX(rng), randomY(rng));
+                room.addSpawn(Room.EnemyType.TOMATO,   randomX(rng), randomY(rng));
+                room.addSpawn(Room.EnemyType.RANGED,   randomX(rng), randomY(rng));
+                room.addSpawn(Room.EnemyType.CHICKEN,  randomX(rng), randomY(rng));
+                room.addSpawn(Room.EnemyType.ONION,    randomX(rng), randomY(rng));
+            }
+            default -> {
+                // Harder mix for later combat rooms
+                int base = 3 + roomIndex;
+                for (int i = 0; i < base / 2; i++)
+                    room.addSpawn(Room.EnemyType.TOMATO,   randomX(rng), randomY(rng));
+                room.addSpawn(Room.EnemyType.RANGED,   randomX(rng), randomY(rng));
+                room.addSpawn(Room.EnemyType.CHICKEN,  randomX(rng), randomY(rng));
+                room.addSpawn(Room.EnemyType.BROCCOLI, randomX(rng), randomY(rng));
+                room.addSpawn(Room.EnemyType.ONION,    randomX(rng), randomY(rng));
+                room.addSpawn(Room.EnemyType.SHRIMP,   randomX(rng), randomY(rng));
+                room.addSpawn(Room.EnemyType.SHRIMP,   randomX(rng), randomY(rng));
+            }
         }
     }
 

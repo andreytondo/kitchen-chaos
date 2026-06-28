@@ -15,7 +15,7 @@ public class ShrimpEnemy extends EnemyBase {
               Constants.SHRIMP_SIZE, Constants.SHRIMP_SIZE,
               Constants.SHRIMP_SPEED, Constants.SHRIMP_HEALTH,
               walkSheet, deathSound,
-              new MeleeChaseAI(new Attack(5f, Constants.SHRIMP_SIZE, 1.0f)), target,
+              new MeleeChaseAI(new Attack(5f, Constants.SHRIMP_SIZE, 0.6f)), target,
               0.07f,
               new Color(1f, 0.7f, 0.2f, 1f),   // hurtColor — bright orange flash
               new Color(1f, 0.55f, 0.1f, 1f));  // baseColor — deep orange

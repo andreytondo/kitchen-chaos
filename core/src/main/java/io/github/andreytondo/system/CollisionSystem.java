@@ -18,39 +18,43 @@ public class CollisionSystem {
                 if (a.isActive() && b.isActive()) pushApart(a, b);
             }
         }
-        if (player.isActive()) pushActorOutOfWalls(player, walls);
+        // Two passes: second pass catches corners where first push creates a new overlap
+        if (player.isActive()) { pushActorOutOfWalls(player, walls); pushActorOutOfWalls(player, walls); }
         for (BaseActor e : enemies) {
-            if (e.isActive()) pushActorOutOfWalls(e, walls);
+            if (e.isActive()) { pushActorOutOfWalls(e, walls); pushActorOutOfWalls(e, walls); }
         }
     }
 
     private static void pushApart(BaseActor a, BaseActor b) {
-        float ax = a.getX() + a.getWidth()  / 2f;
-        float ay = a.getY() + a.getHeight() / 2f;
-        float bx = b.getX() + b.getWidth()  / 2f;
-        float by = b.getY() + b.getHeight() / 2f;
+        float ax = a.getCollisionX() + a.getCollisionWidth()  / 2f;
+        float ay = a.getCollisionY() + a.getCollisionHeight() / 2f;
+        float bx = b.getCollisionX() + b.getCollisionWidth()  / 2f;
+        float by = b.getCollisionY() + b.getCollisionHeight() / 2f;
 
-        float overlapX = (a.getWidth()  / 2f + b.getWidth()  / 2f) - Math.abs(ax - bx);
-        float overlapY = (a.getHeight() / 2f + b.getHeight() / 2f) - Math.abs(ay - by);
+        float overlapX = (a.getCollisionWidth()  / 2f + b.getCollisionWidth()  / 2f) - Math.abs(ax - bx);
+        float overlapY = (a.getCollisionHeight() / 2f + b.getCollisionHeight() / 2f) - Math.abs(ay - by);
 
         if (overlapX <= 0 || overlapY <= 0) return;
 
+        // Push both actors half the overlap each so neither gets shoved into a wall alone
+        float halfX = overlapX / 2f;
+        float halfY = overlapY / 2f;
         if (overlapX < overlapY) {
-            if (ax < bx) b.getPosition().x += overlapX;
-            else         b.getPosition().x -= overlapX;
+            if (ax < bx) { a.getPosition().x -= halfX; b.getPosition().x += halfX; }
+            else          { a.getPosition().x += halfX; b.getPosition().x -= halfX; }
         } else {
-            if (ay < by) b.getPosition().y += overlapY;
-            else         b.getPosition().y -= overlapY;
+            if (ay < by) { a.getPosition().y -= halfY; b.getPosition().y += halfY; }
+            else          { a.getPosition().y += halfY; b.getPosition().y -= halfY; }
         }
     }
 
     private static void pushActorOutOfWalls(BaseActor actor, List<Rectangle> walls) {
-        float ax = actor.getX();
-        float ay = actor.getY();
-        float aw = actor.getWidth();
-        float ah = actor.getHeight();
-
         for (Rectangle wall : walls) {
+            float ax = actor.getCollisionX();
+            float ay = actor.getCollisionY();
+            float aw = actor.getCollisionWidth();
+            float ah = actor.getCollisionHeight();
+
             float overlapX = Math.min(ax + aw, wall.x + wall.width)  - Math.max(ax, wall.x);
             float overlapY = Math.min(ay + ah, wall.y + wall.height) - Math.max(ay, wall.y);
 
@@ -67,9 +71,6 @@ public class CollisionSystem {
                 if (actorCY < wallCY) actor.getPosition().y -= overlapY;
                 else                  actor.getPosition().y += overlapY;
             }
-
-            ax = actor.getX();
-            ay = actor.getY();
         }
     }
 }

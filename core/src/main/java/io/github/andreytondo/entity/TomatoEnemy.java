@@ -14,7 +14,7 @@ public class TomatoEnemy extends EnemyBase {
               Constants.TOMATO_SIZE, Constants.TOMATO_SIZE,
               Constants.TOMATO_SPEED, Constants.TOMATO_HEALTH,
               walkSheet, deathSound,
-              new MeleeChaseAI(new Attack(10f, Constants.TOMATO_SIZE, 2f)), target,
+              new MeleeChaseAI(new Attack(10f, Constants.TOMATO_SIZE, 1.0f)), target,
               0.12f, new Color(1f, 0.3f, 0.3f, 1f), Color.WHITE);
     }
 }

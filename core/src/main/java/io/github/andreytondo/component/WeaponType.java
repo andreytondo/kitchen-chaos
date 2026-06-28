@@ -1,11 +1,11 @@
 package io.github.andreytondo.component;
 
 public enum WeaponType {
-    FRYING_PAN  ("Frigideira",    35f, 220f, 0.60f, true,  1, 0f),
-    CHEF_KNIFE  ("Faca de Chef",  15f, 190f, 0.25f, true,  1, 0f),
-    LADLE       ("Concha",        20f,   0f, 0.80f, false, 1, 0f),
-    SALT_SHAKER ("Saleiro",       12f,   0f, 1.00f, false, 5, 28f),
-    GIANT_FORK  ("Garfo Gigante", 55f, 250f, 1.20f, true,  1, 0f);
+    FRYING_PAN  ("Frigideira",    35f, 220f, 0.35f, true,  1, 0f),
+    CHEF_KNIFE  ("Faca de Chef",  15f, 190f, 0.15f, true,  1, 0f),
+    LADLE       ("Concha",        20f,   0f, 0.50f, false, 1, 0f),
+    SALT_SHAKER ("Saleiro",       12f,   0f, 0.60f, false, 5, 28f),
+    GIANT_FORK  ("Garfo Gigante", 55f, 250f, 0.70f, true,  1, 0f);
 
     public final String  displayName;
     public final float   damage;
